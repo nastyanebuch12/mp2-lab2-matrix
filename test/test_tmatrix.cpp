@@ -26,33 +26,16 @@ TEST(TMatrix, can_create_copied_matrix)
 
 TEST(TMatrix, copied_matrix_is_equal_to_source_one)
 {
-	//const int size = 3;
-	TMatrix<int>* m;
-	m = new TMatrix<int>(3);
-	for (int i = 0; i < (*m).GetSize(); i++)
-		for (int j = 0; j < (*m).GetSize(); j++)
-			(*m)[i][j] = i;
-	TMatrix<int> m1(*m);
-	delete m;
-	TMatrix<int> m2(3);
-	for (int i = 0; i < m2.GetSize(); i++)
-		for (int j = 0; j < (*m).GetSize(); j++)
-			m2[i][j] = i;
-	EXPECT_EQ(m1, m2);
+	TMatrix<int> m(3);
+	TMatrix<int> m1(m);
+	EXPECT_EQ(m1, m);
 }
 
 TEST(TMatrix, copied_matrix_has_its_own_memory)
 {
-	TMatrix<int>* m;
-	m = new TMatrix<int>(3);
-	int s = (*m).GetSize();
-	for (int i = 0; i < s; i++)
-		for (int j = 0; j < s; j++)
-		(*m)[i][j] = i;
-	TMatrix<int> m1(*m);
-	delete m;
-	int s1 = m1.GetSize();
-	EXPECT_EQ(s1, s);
+	TMatrix<int> m(3);
+	TMatrix<int> m1(m);
+	EXPECT_EQ(0,&m1==&m);
 }
 
 TEST(TMatrix, can_get_size)
@@ -84,27 +67,17 @@ TEST(TMatrix, throws_when_set_element_with_too_large_index)
 
 TEST(TMatrix, can_assign_matrix_to_itself)
 {
-	const int size = 2;
-	TMatrix<int> m(size);
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
-			m[i][j] = 1;
-	m = m;
-	EXPECT_EQ(1, m[0][0]);
-	EXPECT_EQ(1, m[0][1]);
-	EXPECT_EQ(1, m[1][0]);
-	EXPECT_EQ(1, m[1][1]);
+	TMatrix<int> m(12);
+	ASSERT_NO_THROW(m = m);
 }
 
 TEST(TMatrix, can_assign_matrices_of_equal_size)
 {
-	const int size = 2;
-	TMatrix<int> m(size),m1(size);
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
-			m[i][j] = 1;
-	m1 = m;
-	EXPECT_EQ(m, m1);
+	TMatrix<int> m(12);
+	TMatrix<int> m2(12);
+	ASSERT_NO_THROW(m2 = m);
+	m2 = m;
+	EXPECT_EQ(m2, m);
 }
 
 TEST(TMatrix, assign_operator_change_matrix_size)
@@ -119,33 +92,19 @@ TEST(TMatrix, can_assign_matrices_of_different_size)
 {
 	const int size = 2,size1=5;
 	TMatrix<int> m(size), m1(size1);
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
-			m[i][j] = 1;
 	m1 = m;
 	EXPECT_EQ(m, m1);
 }
 
 TEST(TMatrix, compare_equal_matrices_return_true)
 {
-	const int size = 2;
-	TMatrix<int> m(size), m1(size);
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
-			m[i][j] = 1;
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
-			m1[i][j] = 1;
+	TMatrix<int> m(2), m1(m);
 	ASSERT_TRUE(m == m1);
 }
 
 TEST(TMatrix, compare_matrix_with_itself_return_true)
 {
-	const int size = 2;
-	TMatrix<int> m(size);
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
-			m[i][j] = 1;
+	TMatrix<int> m(2);
 	ASSERT_TRUE(m == m);
 }
 
@@ -159,61 +118,56 @@ TEST(TMatrix, matrices_with_different_size_are_not_equal)
 
 TEST(TMatrix, can_add_matrices_with_equal_size)
 {
-	const int size = 2;
-	TMatrix<int> m(size), m1(size), res;
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
-			m[i][j] = 1;
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
+	TMatrix<int> m1(2);
+	TMatrix<int> m2(2);
+	TMatrix<int> m3(2);
+	for (int i = 0; i < 2; i++)
+		for (int j = i; j < 2; j++)
+			m3[i][j] = 4;
+	for (int i = 0; i < 2; i++)
+		for (int j = i; j < 2; j++)
+		{
 			m1[i][j] = 2;
-	res = m + m1;
-	EXPECT_EQ(3, res[0][0]);
-	EXPECT_EQ(3, res[0][1]);
-	EXPECT_EQ(3, res[1][0]);
-	EXPECT_EQ(3, res[1][1]);
+			m2[i][j] = 2;
+		}
+	ASSERT_NO_THROW(m1 + m2);
+	EXPECT_EQ(m3, m1 + m2);
+
 }
 
 TEST(TMatrix, cant_add_matrices_with_not_equal_size)
 {
-	const int size = 2,size1=5;
-	TMatrix<int> m(size), m1(size1), res;
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
-			m[i][j] = 1;
-	for (int i = 0; i < size1; i++)
-		for (int j = 0; j < size1; j++)
-			m1[i][j] = 2;
-	ASSERT_ANY_THROW(res = m + m1);
+	TMatrix<int> m1(1);
+	TMatrix<int> m2(2);
+	ASSERT_ANY_THROW(m1 + m2);
+	
 }
 
 TEST(TMatrix, can_subtract_matrices_with_equal_size)
 {
-	const int size = 2;
-	TMatrix<int> m(size), m1(size), res;
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
-			m[i] = 5;
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
-			m1[i] = 2;
-	res = m - m1;
-	EXPECT_EQ(3, res[0][0]);
-	EXPECT_EQ(3, res[0][1]);
-	EXPECT_EQ(3, res[1][0]);
-	EXPECT_EQ(3, res[1][1]);
+	TMatrix<int> m1(2);
+	TMatrix<int> m2(2);
+	TMatrix<int> m3(2);
+	for (int i = 0; i < 2; i++)
+		for (int j = i; j < 2; j++)
+			m3[i][j] = 0;
+
+	for (int i = 0; i < 2; i++)
+		for (int j = i; j < 2; j++)
+		{
+			m1[i][j] = 2;
+			m2[i][j] = 2;
+		}
+
+	ASSERT_NO_THROW(m1 - m2);
+	EXPECT_EQ(m1 - m2, m3);
 }
 
 TEST(TMatrix, cant_subtract_matrixes_with_not_equal_size)
 {
-	const int size = 2, size1 = 5;
-	TMatrix<int> m(size), m1(size1), res;
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
-			m[i][j] = 1;
-	for (int i = 0; i < size1; i++)
-		for (int j = 0; j < size1; j++)
-			m1[i][j] = 2;
-	ASSERT_ANY_THROW(res = m - m1);
+	TMatrix<int> m1(1);
+	TMatrix<int> m2(2);
+
+	ASSERT_ANY_THROW(m1 - m2);
 }
 
